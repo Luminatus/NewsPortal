@@ -142,23 +142,6 @@ namespace NewsPortal.Website.Services
 
         }
 
-        public Article GetArticleById(int id, int test, bool includeAuthor = true, bool includeImages = true)
-        {
-            IQueryable<Article> query = _context.Articles;
-
-            if (includeAuthor)
-            {
-                query = query.Include("Author");
-            }
-            if (includeImages)
-            {
-                query = query.Include("Images");
-            }
-
-            return query.FirstOrDefault(a => a.Id == id);
-
-        }
-
         public bool CreateArticle(Article article)
         {
             try

@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@model NewsPortal.Website.Models.MainPageViewModel
+
+<div id="highlighted">
+    <div class="page-header"><h3>Vezető Cikkek</h3></div>
+    <div  class="article-holder">
+        @foreach (var leading_article in Model.LeadingArticles)
+        {
+
+            var dateString = leading_article.PublishedAt.Value.ToString("yyyy-MM-dd");
+            var timeString = leading_article.PublishedAt.Value.ToString("HH:mm");
+            var dayString = leading_article.PublishedAt.Value.ToString("dddd", new System.Globalization.CultureInfo("hu-HU"));
+            dayString = char.ToUpper(dayString[0]) + dayString.Substring(1);
+
+        <div class="row row-leading">
+            <a asp-controller="Home" asp-action="Detail" asp-route-id="@leading_article.Id" class="article-link">
+                @if (leading_article.CoverImage != null)
+                {
+                    <div class="col-xs-3 leading-img">
+                        <img src="data:image/jpeg;base64,  @leading_article.CoverImage.Base64Data" alt="Visual Studio" class="img-responsive" />
+                    </div>
+                    <div class="col-xs-7 leading-title">
+                        <h3>@leading_article.Name</h3>
+                        <p>@leading_article.Lead</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-xs-10 leading-title">
+                        <h3>@leading_article.Name</h3>
+                        <p>@leading_article.Lead</p>
+                    </div>
+
+                }
+                    <div class="col-xs-2 leading-created text-center">
+                        <p>@leading_article.AuthorName</p>
+                        <div class="col-xs-12 article-day">@dayString</div>
+                        <div class="col-xs-12">@dateString</div>
+                        <div class="col-xs-12">@timeString</div>
+                    </div>
+            </a>
+        </div>
+        }
+    </div>
+</div>
+<div id="most-recent">
+    <div class="page-header"><h3>Legfrissebb Hírek</h3></div>
+    <div class="article-holder">
+        @foreach (var article in Model.Articles)
+        {
+
+            var dateString = article.PublishedAt.Value.ToString("yyyy-MM-dd");
+            var timeString = article.PublishedAt.Value.ToString("HH:mm");
+            var dayString = article.PublishedAt.Value.ToString("dddd", new System.Globalization.CultureInfo("hu-HU"));
+            dayString = char.ToUpper(dayString[0]) + dayString.Substring(1);
+
+            <div class="row row-article">
+                <a asp-controller="Home" asp-action="Detail" asp-route-id="@article.Id" class="article-link">
+                    <div class="col-xs-1 article-datetime">
+                        <div class="col-xs-12 article-day">@dayString</div>
+                        <div class="col-xs-12">@dateString</div>
+                        <div class="col-xs-12">@timeString</div>
+                    </div>
+                    <div class="col-xs-9 article-title-holder">
+                        <p class="article-title">@article.Name</p>
+                        <p>@article.Lead</p>
+                    </div>
+                    <div class="col-xs-2 article-created">
+                        <p>@article.AuthorName</p>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>

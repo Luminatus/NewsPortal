@@ -1,0 +1,57 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@model NewsPortal.Website.Models.ArticleViewModel
+<div class="row">
+    <h2 class="text-center detail-title">@Model.Name</h2>
+</div>
+<div class="row">
+    <div class="col-xs-6"><span class="credit-text">@Model.AuthorName</span></div>
+    <div class="col-xs-6 pull-right"><span class="credit-text pull-right">@Model.PublishedAt</span></div>
+</div>
+<div class="container" id="content-block">
+    <div class="row">
+        <div class="col-xs-12"> <p class="article-lead">@Model.Lead</p></div>
+    </div>
+    @if(Model.Images.Any())
+    {
+        <div id="myCarousel" class="carousel slide">
+            <div class="carousel-inner" role="listbox">
+                <ol class="carousel-indicators">
+                    @for (var i = 0; i < Model.Images.Count; i++)
+                    {
+                        <li data-target="#myCarousel" data-slide-to="@i" @(i == 0 ? "class=active" : "")></li>
+                    }
+                </ol>
+                @foreach (var image in Model.Images)
+                {
+                    <div class="item gallery-item @(Model.Images.First() == image ? "active":"")">
+                        <div class="gallery-img-holder">
+                            <img src="data:image/jpeg;base64, @image.Base64Data" alt="Visual Studio" class="gallery-img" />
+                        </div>
+                        <div class="carousel-caption gallery-caption" role="option">
+                            <span>@image.Name</span>
+                        </div>
+                    </div>
+                }
+            </div>
+            <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                <span class="sr-only">Previous</span>
+            </a>
+            <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+                <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                <span class="sr-only">Next</span>
+            </a>
+        </div>
+
+    }
+    @{ 
+        var contentBlocks = Model.Content.Split(Environment.NewLine);
+    }
+
+    @foreach(var block in contentBlocks)
+    {
+        <p class="content-section">@block</p>
+    }
+</div>

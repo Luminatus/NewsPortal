@@ -1,0 +1,106 @@
+﻿@{
+    ViewData["Title"] = "Archive";
+}
+@model NewsPortal.Website.Models.ArchivePageViewModel
+
+@{ 
+    var formParams = new Dictionary<string, string> { { "page", "0" } };
+    var queryData = Context.Request.Query;
+    var queryDictionary = new Dictionary<string, string>();
+    foreach(var query in queryData)
+    {
+        queryDictionary.Add(query.Key, query.Value);
+    }
+}
+
+<script src="~/js/datepicker.js"></script>
+<div id="archive">
+    <div class="page-header"><h3>Archívum</h3></div>
+    <div class="row search-options">
+        <form asp-controller="Home" asp-action="Archive" asp-all-route-data="formParams" method="GET">
+            <div class="form-group col-xs-6">
+                <div class="col-xs-12">
+                    <label asp-for="Search.Search" class="control-label"></label>
+                    <input asp-for="Search.Search" name="search" class="form-control" />
+                    <span asp-validation-for="Search.Search" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12">
+                    <input class="col-xs-1" asp-for="Search.SearchTitle" name="search_title" />
+                    <label class="col-xs-11 control-label" asp-for="Search.SearchTitle"></label>
+                    <span asp-validation-for="Search.SearchTitle" class="text-danger"></span>
+
+                    <input class="col-xs-1" asp-for="Search.SearchLead" name="search_lead" />
+                    <label class="col-xs-11 control-label" asp-for="Search.SearchLead"></label>
+                    <span asp-validation-for="Search.SearchLead" class="text-danger"></span>
+
+                    @Html.CheckBox("Search.SearchTitle", new { @class = "col-xs-1", @name="search_content" })
+                    <label class="col-xs-11 control-label" asp-for="Search.SearchContent"></label>
+                    <span asp-validation-for="Search.SearchContent" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group col-xs-6">
+                <div class="col-xs-12">
+                    <label asp-for="Search.DateStart" class="control-label"></label>
+                    <input asp-for="Search.DateStart" name="date_start" class="form-control" />
+                    <span asp-validation-for="Search.DateStart" class="text-danger"></span>
+                </div>
+
+                <div class="col-xs-12">
+                    <label asp-for="@Model.Search.DateEnd" class="control-label"></label>
+                    <input asp-for="@Model.Search.DateEnd" name="date_end" class="form-control" />
+                    <span asp-validation-for="@Model.Search.DateEnd" class="text-danger"></span>
+                </div>
+            </div>
+            
+            <div class="form-group col-xs-12 text-center">
+                <a class="btn btn-warning" asp-controller="Home" asp-action="Archive" asp-route-page="1">Keresési feltételek törlése</a>
+                <button class="btn btn-success" type="submit">Keresés</button>
+            </div>
+        </form>
+    </div>
+    <div class="article-holder">
+        @foreach (var article in Model.Articles)
+        {
+
+            var dateString = article.PublishedAt.Value.ToString("yyyy-MM-dd");
+            var timeString = article.PublishedAt.Value.ToString("HH:mm");
+            var dayString = article.PublishedAt.Value.ToString("dddd", new System.Globalization.CultureInfo("hu-HU"));
+            dayString = char.ToUpper(dayString[0]) + dayString.Substring(1);
+
+        <div class="row row-article">
+            <a asp-controller="Home" asp-action="Detail" asp-route-id="@article.Id" class="article-link">
+                <div class="col-xs-1 article-datetime">
+                    <div class="col-xs-12 article-day">@dayString</div>
+                    <div class="col-xs-12">@dateString</div>
+                    <div class="col-xs-12">@timeString</div>
+                </div>
+                <div class="col-xs-9 article-title-holder">
+                    <p class="article-title">@article.Name</p>
+                    <p>@article.Lead</p>
+                </div>
+                <div class="col-xs-2 article-created">
+                    <p>@article.AuthorName</p>
+                </div>
+            </a>
+        </div>
+        }
+    </div>
+    <div>
+        <ul class="pagination">
+            @for (var i = 1; i <= Model.Search.PageCount; i++)
+            {
+                var pars = queryDictionary.ToDictionary(e => e.Key, e=> e.Value);
+                pars["page"] = i.ToString();
+                <li class="page-item @(i == Model.Search.Page ? "active" : "")">
+                    <a asp-controller="Home" asp-action="Archive" asp-route-page="@i" asp-all-route-data="@pars" class="page-link">@i</a>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<script>
+    $('input[name="Search.SearchTitle"]').attr('name', 'search_title');
+    $('input[name="Search.SearchLead"]').attr('name', 'search_lead');
+    $('input[name="Search.SearchContent"]').attr('name', 'search_content');
+</script>

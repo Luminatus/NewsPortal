@@ -46,16 +46,29 @@ namespace NewsPortal.DesktopApplication.Model
         }
 
 
-        public async Task<IEnumerable<Article>> LoadArticlesAsync()
+        public async Task<ArticleListDTO> LoadArticlesAsync()
         {
-            HttpResponseMessage response = await _client.GetAsync("api/Lists/");
+            HttpResponseMessage response = await _client.GetAsync("api/Articles/");
 
             if (response.IsSuccessStatusCode)
             {
-                return await response.Content.ReadAsAsync<IEnumerable<Article>>();
+                return await response.Content.ReadAsAsync<ArticleListDTO>();
             }
 
             throw new NetworkException("Service returned response: " + response.StatusCode);
+        }
+
+        public async Task<ArticleDTO> GetArticleAsync(int id)
+        {
+            HttpResponseMessage response = await _client.GetAsync("api/Articles/"+id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadAsAsync<ArticleDTO>();
+            }
+
+            throw new NetworkException("Service returned response: " + response.StatusCode);
+
         }
 
         public async Task<bool> LoginAsync(string name, string password)

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using NewsPortal.DesktopApplication.Model;
 using NewsPortal.DesktopApplication.ViewModel;
+using NewsPortal.DesktopApplication.View;
 
 namespace NewsPortal.DesktopApplication
 {
@@ -17,9 +18,9 @@ namespace NewsPortal.DesktopApplication
     {
         private INewsService _service;
         private MainViewModel _mainViewModel;
-        //private LoginViewModel _loginViewModel;
+        private LoginViewModel _loginViewModel;
         private MainWindow _view;
-        //private LoginWindow _loginView;
+        private LoginWindow _loginView;
 
         public App()
         {
@@ -32,21 +33,20 @@ namespace NewsPortal.DesktopApplication
 
             _mainViewModel = new MainViewModel(_service);
 
-            //_loginViewModel = new LoginViewModel(_service);
+            _loginViewModel = new LoginViewModel(_service);
 
-            _mainViewModel.ExitApplication += ViewModel_ExitApplication;            
+            _mainViewModel.ExitApplication += ViewModel_ExitApplication;
             //_mainViewModel.MessageApplication += ViewModel_MessageApplication;
-            //_mainViewModel.LoginSuccess += ViewModel_LoginSuccess;
-            //_mainViewModel.LoginFailed += ViewModel_LoginFailed;
+            _loginViewModel.LoginSuccess += ViewModel_LoginSuccess;
+            _loginViewModel.LoginFailed += ViewModel_LoginFailed;
 
-            _view = new MainWindow
+            _loginView = new LoginWindow
             {
-                DataContext = _mainViewModel
+                DataContext = _loginViewModel
             };
 
-            _view.Loaded += _mainViewModel.OnLoaded;
 
-            _view.Show();
+            _loginView.Show();
         }
 
         public async void App_Exit(object sender, ExitEventArgs e)
@@ -62,10 +62,10 @@ namespace NewsPortal.DesktopApplication
             Shutdown();
         }
 
-        /*
+        
         private void ViewModel_LoginSuccess(object sender, EventArgs e)
         {
-            _mainViewModel = new TodoListViewModel(_service);
+            _mainViewModel = new MainViewModel(_service);
             _mainViewModel.MessageApplication += ViewModel_MessageApplication;
 
             _view = new MainWindow
@@ -73,6 +73,7 @@ namespace NewsPortal.DesktopApplication
                 DataContext = _mainViewModel
             };
 
+            _view.Loaded += _mainViewModel.OnLoaded;
             _view.Show();
             _loginView.Close();
         }
@@ -86,7 +87,7 @@ namespace NewsPortal.DesktopApplication
         {
             MessageBox.Show(e.Message, "Bank", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
-        */
+        
     
     }
 }

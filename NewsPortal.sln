@@ -7,9 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "Persistence\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Website", "WebApplication\Website.csproj", "{0F58F0D9-5346-4AE2-AFC5-85452DDFF5E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebService", "WebService\WebService.csproj", "{E21C7BC9-85A6-4344-A5E1-39E1B47F217D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebService", "WebService\WebService.csproj", "{E21C7BC9-85A6-4344-A5E1-39E1B47F217D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopApplication", "DesktopApplication\DesktopApplication.csproj", "{B72A0268-CA95-4BCC-86AE-5D64B354C224}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebServiceTest", "WebServiceTest\WebServiceTest.csproj", "{64C965C9-2892-42C9-914C-95DF0B1C5E54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{B72A0268-CA95-4BCC-86AE-5D64B354C224}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B72A0268-CA95-4BCC-86AE-5D64B354C224}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B72A0268-CA95-4BCC-86AE-5D64B354C224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64C965C9-2892-42C9-914C-95DF0B1C5E54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64C965C9-2892-42C9-914C-95DF0B1C5E54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64C965C9-2892-42C9-914C-95DF0B1C5E54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64C965C9-2892-42C9-914C-95DF0B1C5E54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -9,8 +9,8 @@ namespace NewsPortal.Persistence.DTO
     {
         [Required] public int Limit { get; set; }
         [Required] public int Page { get; set; }
-        [Required] public int Count { get; set; }
+        [Required] public int Count { get; set; }        
         [Required] public int PageCount { get; set; }
-        [Required] public IEnumerable<ArticleListElemDTO> Articles { get; set; }
+        [Required] public IList<ArticleListElemDTO> Articles { get; set; }
     }
 }

@@ -4,156 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NewsPortal.DesktopApplication"
-        xmlns:converter="clr-namespace:NewsPortal.DesktopApplication.Converters"
+        xmlns:Controls="clr-namespace:NewsPortal.DesktopApplication.View.Controls"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800" ScrollViewer.VerticalScrollBarVisibility="Visible">
     <Window.Resources>
-        <converter:ButtonPressConverter x:Key="ButtonPressConverter" />
-        <converter:Base64ToBitmapConverter x:Key="Base64ToBitmapConverter" />
         <ControlTemplate x:Key="list_panel">
-            <DataGrid IsReadOnly="True" VerticalContentAlignment="Stretch" AutoGenerateColumns="False" VerticalAlignment="Stretch" ItemsSource="{Binding ArticleList.Articles}" MinRowHeight="100">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Width="200" Header="Name" Binding="{Binding Path=Name}" />
-                    <DataGridTextColumn Width="100" Header="Author" Binding="{Binding Path=Author}" />
-                    <DataGridTextColumn Width="100" Header="Created" Binding="{Binding Path=CreatedAt}" />
-                    <DataGridTemplateColumn Width="100" Header="Published">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <CheckBox IsEnabled="False" IsChecked="{Binding Path=IsPublished }"></CheckBox>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Width="100" Header="Highlighted">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <CheckBox IsEnabled="False" IsChecked="{Binding Path=IsHighlighted }"></CheckBox>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Actions" Width="200">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel>
-                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}, Path=DataContext.ButtonPress}">
-                                        <Button.CommandParameter>
-                                            <MultiBinding Converter="{StaticResource ButtonPressConverter}">
-                                                <Binding Source="EDIT"/>
-                                                <Binding Path="Id"/>
-                                            </MultiBinding>
-                                        </Button.CommandParameter>
-                                        Edit
-                                    </Button>
-                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}, Path=DataContext.ButtonPress}">
-                                        <Button.CommandParameter>
-                                            <MultiBinding Converter="{StaticResource ButtonPressConverter}">
-                                                <Binding Source="PUBLISH"/>
-                                                <Binding Path="Id"/>
-                                            </MultiBinding>
-                                        </Button.CommandParameter>
-                                        <Button.Style>
-                                            <Style TargetType="{x:Type Button}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsPublished}" Value="True">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                        Publish
-                                    </Button>
-                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}, Path=DataContext.ButtonPress}">
-                                        <Button.CommandParameter>
-                                            <MultiBinding Converter="{StaticResource ButtonPressConverter}">
-                                                <Binding Source="UNPUBLISH"/>
-                                                <Binding Path="Id"/>
-                                            </MultiBinding>
-                                        </Button.CommandParameter>
-                                        <Button.Style>
-                                            <Style TargetType="{x:Type Button}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsPublished}" Value="False">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                        UnPublish
-                                    </Button>
-                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}, Path=DataContext.ButtonPress}">
-                                        <Button.CommandParameter>
-                                            <MultiBinding Converter="{StaticResource ButtonPressConverter}">
-                                                <Binding Source="HIGHLIGHT"/>
-                                                <Binding Path="Id"/>
-                                            </MultiBinding>
-                                        </Button.CommandParameter>
-                                        <Button.Style>
-                                            <Style TargetType="{x:Type Button}">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Button.Style>
-                                        Highlight
-                                    </Button>
-                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type DataGrid}}, Path=DataContext.ButtonPress}">
-                                        <Button.CommandParameter>
-                                            <MultiBinding Converter="{StaticResource ButtonPressConverter}">
-                                                <Binding Source="DELETE"/>
-                                                <Binding Path="Id"/>
-                                            </MultiBinding>
-                                        </Button.CommandParameter>
-                                        Delete
-                                    </Button>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Controls:ListControl></Controls:ListControl>
         </ControlTemplate>
         <ControlTemplate x:Key="edit_panel">
-            <ScrollViewer>
-                <Grid ScrollViewer.VerticalScrollBarVisibility="Visible">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30" />
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="auto" MinHeight="80"/>
-                        <RowDefinition Height="auto" MinHeight="100" />
-                        <RowDefinition Height="auto" MinHeight="80" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Label Margin="0,10,0,10" Grid.Row="0" Grid.Column="0">Cikk Szerkesztése</Label>
-                    <Label Margin="0,10,0,10" Grid.Row="1" Grid.Column="0">Cím</Label>
-                    <TextBox Margin="0,10,0,10" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" Text="{Binding CurrentArticle.Name}" ></TextBox>
-                    <Label Margin="0,10,0,10" Grid.Row="2" Grid.Column="0">Bevezető</Label>
-                    <TextBox Margin="0,10,0,10" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" AcceptsReturn="True" Text="{Binding CurrentArticle.Lead}" ></TextBox>
-                    <Label Margin="0,10,0,10" Grid.Row="3" Grid.Column="0">Tartalom</Label>
-                    <TextBox Margin="0,10,0,10" TextWrapping="Wrap" HorizontalScrollBarVisibility="Disabled" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" AcceptsReturn="True" Text="{Binding CurrentArticle.Content}" ></TextBox>
-                    <Label Margin="0,10,0,10" Grid.Row="4" Grid.Column="0">Galéria</Label>
-                    <ItemsControl Margin="0,10,0,10" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding CurrentArticle.Images}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"   Margin="0,60,0,20" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Width="200" Height="200" Background="#778899" BorderThickness="2" BorderBrush="#334455" Margin="1,1,1,1">
-                                    <Image Source="{Binding Base64, Converter={ StaticResource Base64ToBitmapConverter}}" Height="250" />
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
-            </ScrollViewer>
+            <Controls:EditControl></Controls:EditControl>
         </ControlTemplate>
     </Window.Resources>
     <Grid>
@@ -167,12 +26,24 @@
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal">
-                <Label Grid.Column="0" HorizontalAlignment="Left">Bejelentkezve:</Label>
-                <Label Grid.Column="0" HorizontalAlignment="Left">Lumie</Label>
+                <Label HorizontalAlignment="Left">Bejelentkezve:</Label>
+                <Label HorizontalAlignment="Left" Content="{Binding UserName }"></Label>
             </StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Grid.Column="1">
+                <Button Command="{Binding NewArticleButton}" Height="20" Margin="3" Content="Új cikk">
+                    <Button.Style>
+                        <Style TargetType="{x:Type Button}">
+                            <Setter Property="Visibility" Value="Visible"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsEdit}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
                 <Button Command="{Binding ListButton}" Height="20" Margin="3">Cikkek</Button>
-                <Button Height="20" Margin="3">Kijelentkezés</Button>
+                <Button Command="{Binding SignOutButton}" Height="20" Margin="3">Kijelentkezés</Button>
             </StackPanel>
         </Grid>
         <Control Grid.Row="1" x:Name="container" ScrollViewer.VerticalScrollBarVisibility="Visible">

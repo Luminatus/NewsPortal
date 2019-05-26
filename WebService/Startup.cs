@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NewsPortal.Persistence;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace NewsPortal.WebService
 {
@@ -41,11 +42,13 @@ namespace NewsPortal.WebService
                 options.Password.RequireLowercase = true;
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = true;
-            })
+            })                
                 .AddEntityFrameworkStores<NewsContext>()
                 .AddDefaultTokenProviders();
 
             services.AddMvc();
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,16 +63,15 @@ namespace NewsPortal.WebService
                 app.UseHsts();
             }
 
+            app.UseAuthentication();
+
             app.UseHttpsRedirection();
-            app.UseMvc();
 
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseAuthentication();
 
             app.UseMvc();
 

@@ -2,20 +2,16 @@
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
+using NewsPortal.Persistence;
 
 namespace NewsPortal.Persistence.DTO
 {
     public class EditorDTO
     {
-        [Required] public readonly string Username;
-        [Required] public readonly string Password;
-
-        public EditorDTO(string username, string password = "")
-        {
-            Username = username;
-            Password = password;
-        }
-
-        
+        [Required] public string Username;
+        [Required] public string Name;
+        [Required] public string Address;
+        [Required] public string Phone;
+        [Required] public int ArticleCount;
     }
 }

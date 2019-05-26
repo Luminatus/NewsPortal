@@ -36,5 +36,9 @@ namespace NewsPortal.DesktopApplication.ViewModel
         {
             MessageApplication?.Invoke(this, new MessageEventArgs(message));
         }
+        protected void OnMessageApplication(object obj,String message)
+        {
+            MessageApplication?.Invoke(obj, new MessageEventArgs(message));
+        }
     }
 }

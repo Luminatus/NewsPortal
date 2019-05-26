@@ -54,6 +54,7 @@ namespace NewsPortal.Persistence
             var adminRole = new IdentityRole<int>("administrator");
 
             var result1 = _userManager.CreateAsync(adminUser, adminPassword).Result;
+            var result4 = _userManager.AddClaimAsync(adminUser, new System.Security.Claims.Claim("Id", adminUser.Id.ToString()));            
             var result2 = _roleManager.CreateAsync(adminRole).Result;
             var result3 = _userManager.AddToRoleAsync(adminUser, adminRole.Name).Result;
 

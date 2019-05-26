@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using NewsPortal.WebService.Models.DataStructures;
 using Microsoft.AspNetCore.Identity;
 
-namespace WebService.Controllers
+namespace NewsPortal.WebService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -63,8 +63,20 @@ namespace WebService.Controllers
 
         // GET: api/Articles/
         [HttpGet]
-        public async Task<ArticleListDTO> GetArticles(int page, [FromQuery]SearchParameters parameters)
+        public async Task<IActionResult> GetArticles(int page, [FromQuery]SearchParameters parameters)
         {
+            var user = await _userManager.GetUserAsync(User);
+
+            if(user == null)
+            {
+                return Unauthorized();
+            }
+
+            if(parameters == null)
+            {
+                parameters = new SearchParameters();
+            }
+
             if (page == 0)
                 page = 1;
 
@@ -82,7 +94,7 @@ namespace WebService.Controllers
             {
                 Offset = (page - 1) * LIST_LIMIT,
                 Limit = LIST_LIMIT,
-                ArticleType = ArticleType.Published,
+                ArticleType = ArticleType.All,
                 IncludeAuthor = true,
                 SearchType = searchType,
                 SearchString = parameters.Search,
@@ -113,8 +125,12 @@ namespace WebService.Controllers
                 query = query.Include(a => a.Author);
             }
 
+            query = query.Where(a => a.Author == user);
+
 
             int count = query.Count();
+
+            query = query.OrderByDescending(a => a.CreatedAt);
 
             if (options.Offset.HasValue && options.Offset.Value > 0)
             {
@@ -151,13 +167,25 @@ namespace WebService.Controllers
                 Articles = list
             };
 
-            return result;
+            return Ok(result);
         }
 
         // GET: api/Articles/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetArticle([FromRoute] int id)
         {
+            if(id <= 0)
+            {
+                return BadRequest();
+            }
+
+             var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -182,35 +210,46 @@ namespace WebService.Controllers
                 PublishedAt = article.PublishedAt,
                 IsPublished = article.IsPublished,
                 IsHighlighted = article.IsHighlighted,
-                Images = article.Images.Select(x => { return new ImageDTO { Id = x.Id, Base64 = Convert.ToBase64String(x.Image) }; })
+                Images = article.Images.Select(x => { return new ImageDTO { Id = x.Id, Base64 = Convert.ToBase64String(x.Image), Name = x.Name }; }).ToList()
             };
 
             return Ok(articleDTO);
         }
 
-        // PUT: api/Articles/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutArticle([FromRoute] int id, [FromBody] Article article)
+        // PUT: api/Articles
+        [HttpPut]
+        public async Task<IActionResult> PutArticle([FromBody] ArticleDTO data)
         {
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != article.Id)
-            {
-                return BadRequest();
-            }
+            Article article = new Article();
 
-            _context.Entry(article).State = EntityState.Modified;
+            article.Author = user;
+            article.Content = data.Content;
+            article.Name = data.Name;
+            article.Lead = data.Lead;
+            article.UpdatedAt = DateTime.Now;
+            article.CreatedAt = DateTime.Now;
+
+            _context.Articles.Add(article);
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!ArticleExists(id))
+                if (!ArticleExists(article.Id))
                 {
                     return NotFound();
                 }
@@ -220,28 +259,189 @@ namespace WebService.Controllers
                 }
             }
 
-            return NoContent();
+            ArticleDTO responseData = new ArticleDTO()
+            {
+                Id = article.Id,
+                Name = article.Name,
+                Lead = article.Lead,
+                Content = article.Content,
+                CreatedAt = article.CreatedAt,
+                HighlightedAt = article.HighlightedAt,
+                IsHighlighted = article.IsHighlighted,
+                Images = new List<ImageDTO>(),
+                Author = user.Name,
+                IsPublished = article.IsPublished,
+                PublishedAt = article.PublishedAt
+            };
+            return Ok(responseData);
+            //return CreatedAtAction("GetArticle", new { id = article.Id }, article);
         }
 
-        // POST: api/Articles
-        [HttpPost]
-        public async Task<IActionResult> PostArticle([FromBody] Article article)
+        // POST: api/Articles/5
+        [HttpPost("{id}")]
+        public async Task<IActionResult> PostArticle([FromRoute] int id, [FromBody] ArticleDTO data)
         {
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.Articles.Add(article);
-            await _context.SaveChangesAsync();
+            if(id != data.Id)
+            {
+                return BadRequest();
+            }
 
-            return CreatedAtAction("GetArticle", new { id = article.Id }, article);
+            if (data.Lead.Length == 0 || data.Content.Length == 0 || data.Name.Length == 0 || data.Lead.Length > 1000)
+            {
+                return BadRequest();
+            }
+
+            Article article = await _context.Articles.Include("Images").FirstOrDefaultAsync(elem => elem.Id == data.Id);
+            if(article == null)
+            {
+                return NotFound();
+            }
+
+            if(article.Author != user)
+            {
+                return Unauthorized();
+            }
+
+
+            article.Lead = data.Lead;
+            article.Content = data.Content;
+            article.Name = data.Name;
+            article.UpdatedAt = DateTime.Now;
+
+            List<int> imageIds = data.Images.Select(elem => elem.Id).ToList();
+            List<ArticleImage> deletedImages = article.Images.Where(elem => !imageIds.Contains(elem.Id)).ToList();
+
+            foreach(ArticleImage image in deletedImages)
+            {
+                article.Images.Remove(image);
+            }
+
+            foreach(ImageDTO imageData in data.Images)
+            {
+                ArticleImage image = article.Images.FirstOrDefault(elem => elem.Id == imageData.Id);
+                if (image == null)
+                    continue;
+                image.Name = imageData.Name;
+                _context.Entry(image).State = EntityState.Modified;
+            }
+
+            _context.Entry(article).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateConcurrencyException ex)
+            {
+                throw;   
+            }
+
+            return NoContent();
+        }
+
+        [HttpPut("{id}/Image")]
+        public async Task<IActionResult> PutImage([FromRoute] int id, [FromBody] ImageDTO data)
+        {
+            if(id <= 0)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if(data.Base64.Length == 0)
+            {
+                return BadRequest();
+            }
+
+            Article article = await _context.Articles.FirstOrDefaultAsync(elem => elem.Id == id);
+            if (article == null)
+            {
+                return NotFound();
+            }
+
+            byte[] imageData;
+            try
+            {
+                imageData = Convert.FromBase64String(data.Base64);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex);
+            }
+
+
+            ArticleImage image = new ArticleImage()
+            {
+                Name = data.Name,
+                Image = imageData
+            };
+
+            article.Images.Add(image);
+
+            _context.Entry(article).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                throw;
+            }
+
+            ImageDTO responseData = new ImageDTO()
+            {
+                Id = image.Id,
+                Name = image.Name,
+                Base64 = Convert.ToBase64String(image.Image)
+            };
+            return Ok(responseData);
         }
 
         // DELETE: api/Articles/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteArticle([FromRoute] int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -253,16 +453,156 @@ namespace WebService.Controllers
                 return NotFound();
             }
 
+            if(article.Author != user)
+            {
+                return Unauthorized();
+            }
+
             _context.Articles.Remove(article);
             await _context.SaveChangesAsync();
 
-            return Ok(article);
+            return Ok();
+        }
+
+        // POST: api/Articles/5/Highlight
+        [HttpPost("{id}/Highlight")]
+        public async Task<IActionResult> PostHighlightArticle([FromRoute] int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var article = _context.Articles.Include("Images").FirstOrDefault(a => a.Id == id);
+            if (article == null)
+            {
+                return NotFound();
+            }
+
+            if (article.Author != user)
+            {
+                return Unauthorized();
+            }
+
+            if(article.Images.Count == 0)
+            {
+                return BadRequest();
+            }
+
+            if(!article.IsPublished)
+            {
+                return BadRequest();
+            }
+
+            article.HighlightedAt = DateTime.Now;
+            _context.Entry(article).State = EntityState.Modified;
+
+            await _context.Articles.Where(a => a.IsHighlighted && a.Id != article.Id).ForEachAsync(a => { a.HighlightedAt = null; _context.Entry(a).State = EntityState.Modified; });
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
+        // POST: api/Articles/5/Publish
+        [HttpPost("{id}/Publish")]
+        public async Task<IActionResult> PostPublishArticle([FromRoute] int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var article = await _context.Articles.FindAsync(id);
+            if (article == null)
+            {
+                return NotFound();
+            }
+
+            if (article.Author != user)
+            {
+                return Unauthorized();
+            }
+
+            article.PublishedAt = DateTime.Now;
+            _context.Entry(article).State = EntityState.Modified;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+
+        // POST: api/Articles/5/UnPublish
+        [HttpPost("{id}/UnPublish")]
+        public async Task<IActionResult> PostUnPublishArticle([FromRoute] int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var article = await _context.Articles.FindAsync(id);
+            if (article == null)
+            {
+                return NotFound();
+            }
+
+            if (article.Author != user)
+            {
+                return Unauthorized();
+            }
+
+            article.PublishedAt = null;
+            _context.Entry(article).State = EntityState.Modified;
+
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
         private bool ArticleExists(int id)
         {
             return _context.Articles.Any(e => e.Id == id);
         }
+
 
 
         private IQueryable<Article> RestrictArticleType(IQueryable<Article> query, ArticleType type)

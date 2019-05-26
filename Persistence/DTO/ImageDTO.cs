@@ -10,5 +10,6 @@ namespace NewsPortal.Persistence.DTO
     {
         [Required] public int Id { get; set; }
         [Required] public string Base64 { get; set; }
+        [Required] public string Name { get; set; }
     }
 }

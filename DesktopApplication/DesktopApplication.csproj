@@ -69,11 +69,23 @@
     </ApplicationDefinition>
     <Compile Include="Converters\Base64ToBitmapConverter.cs" />
     <Compile Include="Converters\ButtonPressConverter.cs" />
+    <Compile Include="Model\ArticleClientData.cs" />
+    <Compile Include="Model\ImageClientData.cs" />
     <Compile Include="ViewModel\DelegateCommand.cs" />
+    <Compile Include="ViewModel\EditViewModel.cs" />
+    <Compile Include="ViewModel\ListViewModel.cs" />
     <Compile Include="ViewModel\LoginViewModel.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\MessageEventArgs.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
+    <Page Include="View\Controls\EditControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Controls\ListControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\LoginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -85,6 +97,12 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="View\Controls\EditControl.xaml.cs">
+      <DependentUpon>EditControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Controls\ListControl.xaml.cs">
+      <DependentUpon>ListControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>

@@ -7,18 +7,49 @@ using NewsPortal.DesktopApplication.Model;
 using NewsPortal.Persistence;
 using NewsPortal.Persistence.DTO;
 using System.Collections.ObjectModel;
-
+using System.Net.Http.Handlers;
+using System.Windows;
 
 namespace NewsPortal.DesktopApplication.ViewModel
 {
     class MainViewModel : ViewModelBase
     {
         private Boolean _isEdit;
-
-        private ArticleListDTO _articles;
-        private ArticleDTO _currentArticle;
+     
         private readonly INewsService _service;
-        public event EventHandler ExitApplication;
+        public event EventHandler LoggedOut;
+
+        private string _userName;
+        public string UserName
+        {
+            get
+            {
+                return _userName;
+            }
+            set
+            {
+                _userName = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private ListViewModel _listVM;
+        public ListViewModel ListVM { get
+            {
+                return _listVM;
+            }
+        }
+
+        private EditViewModel _editVM;
+        public EditViewModel EditVM
+        {
+            get
+            {
+                return _editVM;
+            }
+        }
+
+        //public ViewModelBase ActiveViewModel;
 
 
         public Boolean IsEdit
@@ -31,25 +62,7 @@ namespace NewsPortal.DesktopApplication.ViewModel
             }
 
         }
-        public ArticleListDTO ArticleList
-        {
-            get => _articles;
-            set
-            {
-                _articles = value;
-                OnPropertyChanged();
-            }
-        }
 
-        public ArticleDTO CurrentArticle
-        {
-            get => _currentArticle;
-            set
-            {
-                _currentArticle = value;
-                OnPropertyChanged();
-            }
-        }
 
         private DelegateCommand _listButton;
         public DelegateCommand ListButton
@@ -59,83 +72,72 @@ namespace NewsPortal.DesktopApplication.ViewModel
                 return _listButton ?? (_listButton = new DelegateCommand((param) => { ToList(); }));
             }
         }
-
-        private DelegateCommand _buttonPress;
-        public DelegateCommand ButtonPress
+        
+        private DelegateCommand _newArticleButton;
+        public DelegateCommand NewArticleButton
         {
             get
             {
-                return _buttonPress ?? (_buttonPress = new DelegateCommand((param) => {
-                    var paramT = (Tuple<String, int>)param;
-                    if (paramT == null)
-                        return;
-                    var text = paramT.Item1;
-                    var id = paramT.Item2;
-                    ButtonPressed(text, id);
-                }));
+                return _newArticleButton ?? (_newArticleButton = new DelegateCommand((param) => { ToEdit(); }));
             }
         }
-        
+
+        private DelegateCommand _signOutButton;
+        public DelegateCommand SignOutButton
+        {
+            get
+            {
+                return _signOutButton ?? (_signOutButton = new DelegateCommand( (param) => { SignOut(); }));
+            }
+        }
+
+        public async Task SignOut()
+        {
+            await _service.LogoutAsync();
+            LoggedOut.Invoke(this,null);
+        }
+
+
         public MainViewModel(INewsService service)
         {
             _service = service;
+            _listVM = new ListViewModel(_service);
+            _editVM = new EditViewModel(_service);
+            _listVM.OpenForEdit += new EventHandler<int?>((obj,p) => ToEdit(p));
+            _editVM.BackToList += new EventHandler((obj, p) => ToList());
+            _listVM.MessageApplication += new EventHandler<MessageEventArgs>((obj, msgArg) => { OnMessageApplication(obj, msgArg.Message); });
+            _editVM.MessageApplication += new EventHandler<MessageEventArgs>((obj, msgArg) => { OnMessageApplication(obj, msgArg.Message); });
         }
 
         public async void OnLoaded(object sender, EventArgs e)
         {
             ToList();
+            GetUser();
         }
-
-
-        public async void LoadAsync()
-        {
-            try
-            {
-                ArticleList = await _service.LoadArticlesAsync().ConfigureAwait(false);
-            }
-            catch (NetworkException ex)
-            {
-                OnMessageApplication($"Váratlan hiba történt! ({ex.Message})");
-            }
-
-            IsEdit = false;
-        }
-
         
-        private void ButtonPressed(string text, int id)
-        {
-            Console.WriteLine("%0 - %1", text, id);
-
-            if(text == "EDIT")
-            {
-                ToEdit(id);
-            }
-
-        }
-
         private async void ToList()
         {
-            ArticleListDTO result = await _service.LoadArticlesAsync();
-            result.Articles = new ObservableCollection<ArticleListElemDTO>(result.Articles);
-            ArticleList = result;
-            IsEdit = false;
+            bool success = await ListVM.LoadAsync(1);
+            if(success)
+            {
+                IsEdit = false;
+            }
+            
         }
 
         private async void ToEdit(int? id = null)
         {
-            if (id.HasValue)
+            bool success = await _editVM.LoadAsync(id);            
+            if(success)
             {
-                CurrentArticle = await _service.GetArticleAsync(id.Value);
+                IsEdit = true;
             }
-                
-            else
-            {
-                CurrentArticle = new ArticleDTO();
-            }                
+        }
 
-
-            IsEdit = true;
-
+        private async void GetUser()
+        {
+            var user = await _service.GetUserAsync();
+            UserName = user.Name;
         }
         
     }

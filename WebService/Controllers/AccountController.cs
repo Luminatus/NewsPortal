@@ -21,9 +21,32 @@ namespace NewsPortal.WebService.Controllers
             _signInManager = signInManager;
         }
 
+        // api/Account/
+        [HttpGet]
+        public async Task<IActionResult> GetUser()
+        {
+            Editor user = await _signInManager.UserManager.GetUserAsync(User);
+            if(user == null)
+            {
+                return Unauthorized();
+            }
+
+            EditorDTO responseData = new EditorDTO
+            {
+                Username = user.UserName,
+                Name = user.Name,
+                Address = user.Address,
+                Phone = user.PhoneNumber,
+                ArticleCount = user.Articles.Count
+            };
+
+            return Ok(responseData);
+
+        }
+
         // api/Account/Login
         [HttpPost("[action]")]
-        public async Task<IActionResult> Login([FromBody] EditorDTO user)
+        public async Task<IActionResult> Login([FromBody] LoginDTO user)
         {
             if (_signInManager.IsSignedIn(User))
                 await _signInManager.SignOutAsync();

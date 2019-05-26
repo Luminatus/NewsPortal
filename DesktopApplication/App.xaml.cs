@@ -35,8 +35,8 @@ namespace NewsPortal.DesktopApplication
 
             _loginViewModel = new LoginViewModel(_service);
 
-            _mainViewModel.ExitApplication += ViewModel_ExitApplication;
-            //_mainViewModel.MessageApplication += ViewModel_MessageApplication;
+            _mainViewModel.LoggedOut += ViewModel_LoggedOut;
+            _mainViewModel.MessageApplication += ViewModel_MessageApplication;
             _loginViewModel.LoginSuccess += ViewModel_LoginSuccess;
             _loginViewModel.LoginFailed += ViewModel_LoginFailed;
 
@@ -57,7 +57,7 @@ namespace NewsPortal.DesktopApplication
             }
         }
 
-        private void ViewModel_ExitApplication(object sender, EventArgs e)
+        private void ViewModel_LoggedOut(object sender, EventArgs e)
         {
             Shutdown();
         }
@@ -65,8 +65,6 @@ namespace NewsPortal.DesktopApplication
         
         private void ViewModel_LoginSuccess(object sender, EventArgs e)
         {
-            _mainViewModel = new MainViewModel(_service);
-            _mainViewModel.MessageApplication += ViewModel_MessageApplication;
 
             _view = new MainWindow
             {

@@ -105,6 +105,19 @@ namespace NewsPortal.Website.Controllers
                 DateEnd = data.DateEnd
             };
 
+            if(options.DateStart.HasValue && options.DateEnd.HasValue && options.DateStart.Value > options.DateEnd.Value)
+            {
+                ModelState.AddModelError("DateStart", "Kezdődátum nem lehet nagyobb a végdátumnál");
+                ModelState.AddModelError("DateEnd", "Kezdődátum nem lehet nagyobb a végdátumnál");
+
+                var vm = new ArchivePageViewModel
+                {
+                    Search = data,
+                    Articles = { }
+                };
+                return View(vm);
+            }
+
             if(options.DateEnd.HasValue)
             {
                 options.DateEnd = options.DateEnd.Value.AddDays(1).Date; //Add one day to include DateEnd in search

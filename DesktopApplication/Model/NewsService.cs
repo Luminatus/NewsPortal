@@ -275,17 +275,17 @@ namespace NewsPortal.DesktopApplication.Model
         private IList<string> ValidateArticle(ArticleDTO article)
         {
             var errors = new List<string>();
-            if (article.Name.Length == 0)
+            if (article.Name == null || article.Name.Length == 0)
                 errors.Add("Cikk címe nem lehet üres");
             else if (article.Name.Length > 100)
                 errors.Add("Cikk címe nem lehet 100 karakternél hosszabb");
 
-            if (article.Lead.Length == 0)
+            if (article.Lead == null || article.Lead.Length == 0)
                 errors.Add("Cikk bevezetője nem lehet üres");
             else if (article.Lead.Length > 1000)
                 errors.Add("Cikk bevezetője nem lehet 1000 karakternél hosszabb");
 
-            if (article.Content.Length == 0)
+            if (article.Content == null || article.Content.Length == 0)
                 errors.Add("Cikk tartalma nem lehet üres");
 
             return errors;
